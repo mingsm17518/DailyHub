@@ -89,11 +89,11 @@ DailyHub/
 
 # 方式二：手动启动
 cd dailyhub-api
-source venv/bin/activate
-gunicorn -w 4 -b 0.0.0.0:3001 api:app &
+pip install -r requirements.txt
+python api.py
 
 cd dailyhub-app
-python3 -m http.server 3000
+python -m http.server 8080
 ```
 
 ### 3. 访问
