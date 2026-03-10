@@ -148,6 +148,27 @@ class CalendarApp {
 
                     eventEl.textContent = event.title;
                     eventEl.title = `${event.startTime || ''} ${event.title}`; // 鼠标悬停显示完整信息
+
+                    // 添加拖拽支持
+                    eventEl.setAttribute('draggable', 'true');
+                    eventEl.dataset.eventId = event.id;
+                    eventEl.dataset.eventDate = dateStr;
+
+                    // 拖拽开始事件
+                    eventEl.addEventListener('dragstart', (e) => {
+                        e.dataTransfer.setData('application/x-calendar-event', JSON.stringify({
+                            id: event.id,
+                            date: dateStr
+                        }));
+                        e.dataTransfer.effectAllowed = 'move';
+                        eventEl.classList.add('dragging');
+                    });
+
+                    // 拖拽结束事件
+                    eventEl.addEventListener('dragend', () => {
+                        eventEl.classList.remove('dragging');
+                    });
+
                     eventsContainer.appendChild(eventEl);
                 }
 
@@ -179,8 +200,12 @@ class CalendarApp {
         // 拖放区事件监听
         cell.addEventListener('dragover', (e) => {
             e.preventDefault();
+            // 支持待办拖放和日程拖放
             if (e.dataTransfer.types.includes('application/x-todo')) {
                 e.dataTransfer.dropEffect = 'copy';
+                cell.classList.add('drag-over-calendar');
+            } else if (e.dataTransfer.types.includes('application/x-calendar-event')) {
+                e.dataTransfer.dropEffect = 'move';
                 cell.classList.add('drag-over-calendar');
             }
         });
@@ -194,7 +219,15 @@ class CalendarApp {
         cell.addEventListener('drop', (e) => {
             e.preventDefault();
             cell.classList.remove('drag-over-calendar');
-            this.handleTodoDrop(e, dateStr);
+
+            // 判断拖放类型
+            if (e.dataTransfer.types.includes('application/x-calendar-event')) {
+                // 日程拖放 - 修改日期
+                this.handleEventDrop(e, dateStr);
+            } else if (e.dataTransfer.types.includes('application/x-todo')) {
+                // 待办拖放 - 创建日程
+                this.handleTodoDrop(e, dateStr);
+            }
         });
 
         grid.appendChild(cell);
@@ -238,6 +271,62 @@ class CalendarApp {
             await this.createEventFromTodo(todoData, dateStr);
         } catch (err) {
             console.error('处理待办拖放失败:', err);
+        }
+    }
+
+    /**
+     * 处理日程拖放到其他日期单元格
+     * @param {DragEvent} e
+     * @param {string} newDateStr YYYY-MM-DD 格式
+     */
+    async handleEventDrop(e, newDateStr) {
+        try {
+            const eventData = JSON.parse(
+                e.dataTransfer.getData('application/x-calendar-event')
+            );
+
+            if (!eventData || !eventData.id) {
+                console.warn('无效的日程数据');
+                return;
+            }
+
+            // 如果拖放到同一日期，不做处理
+            if (eventData.date === newDateStr) {
+                return;
+            }
+
+            // 获取原始日程
+            const allEvents = await db.getAllEvents();
+            const event = allEvents.find(ev => ev.id === eventData.id);
+
+            if (!event) {
+                console.warn('找不到日程:', eventData.id);
+                return;
+            }
+
+            // 保存原始日期用于提示
+            const oldDateStr = eventData.date;
+
+            // 更新日程日期
+            event.date = newDateStr;
+            event.updated_at = new Date().toISOString();
+
+            await db.updateEvent(event);
+
+            // 刷新日历显示
+            this.render();
+
+            // 显示成功提示
+            showToast(`已将 "${event.title}" 移至 ${newDateStr}`);
+
+            // 如果原始日期或新日期是当前选中的日期，刷新侧边栏
+            const selectedDateStr = formatDate(this.selectedDate);
+            if (oldDateStr === selectedDateStr || newDateStr === selectedDateStr) {
+                this.showEventsForDate(this.selectedDate);
+            }
+        } catch (err) {
+            console.error('处理日程拖放失败:', err);
+            showToast('移动日程失败', 'error');
         }
     }
 

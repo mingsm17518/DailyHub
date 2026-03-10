@@ -1467,6 +1467,20 @@ body.habits-view-active .app-container {
     text-decoration: line-through;
 }
 
+/* 日程拖拽样式 */
+.day-event-title {
+    cursor: grab;
+}
+
+.day-event-title:active {
+    cursor: grabbing;
+}
+
+.day-event-title.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+}
+
 .day-event-more {
     font-size: 10px;
     color: var(--text-secondary);
