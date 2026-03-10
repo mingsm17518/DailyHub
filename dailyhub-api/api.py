@@ -861,6 +861,19 @@ def create_or_update_habit():
         return jsonify(habit_to_dict(Habit.find_by_id(habit_data['id'], user_id))), 201
 
 
+@app.route('/api/habits/<habit_id>', methods=['GET'])
+@jwt_required()
+def get_habit(habit_id):
+    """Get a single habit by ID"""
+    user_id = get_jwt_identity()
+
+    habit = Habit.find_by_id(habit_id, user_id)
+    if not habit:
+        return jsonify({'error': 'Habit not found'}), 404
+
+    return jsonify(habit_to_dict(habit)), 200
+
+
 @app.route('/api/habits/<habit_id>', methods=['DELETE'])
 @jwt_required()
 def delete_habit(habit_id):
