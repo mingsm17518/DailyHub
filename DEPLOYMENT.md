@@ -81,38 +81,7 @@ DailyHub/
 
 ## 部署方式一：本地部署 (localhost)
 
-### 1. 配置文件
-
-后端和前端默认配置已指向 `localhost:3001`，无需修改。
-
-如需确认，配置文件如下：
-
-#### config.json（默认）
-```json
-{
-  "api": {
-    "host": "0.0.0.0",
-    "port": 3001,
-    "jwt_secret_key": "change-this-to-a-random-string",
-    "jwt_token_expires_days": 30,
-    "debug": false,
-    "cors_origins": ["*"]
-  },
-  "app": {
-    "api_base_url": "http://localhost:3001/api"
-  }
-}
-```
-
-#### 前端配置 dailyhub-app/js/config.js（默认）
-```javascript
-window.DAILYHUB_CONFIG = {
-    API_BASE_URL: 'http://localhost:3001/api'
-};
-```
-> 前端端口 3000，API 端口 3001，API_BASE_URL 需指向 API 端口
-
-### 2. 启动服务
+### 1. 启动服务
 
 ```bash
 # 方式一：使用启动脚本
@@ -177,25 +146,17 @@ sqlite3 dailyhub-api/dailyhub.db "INSERT INTO invitation_codes (code, max_uses, 
 需要修改以下配置：
 
 #### config.json
-修改 `config.json`，将地址改为您的服务器 IP 或域名：
+修改 `config.json` 中的 `app.api_base_url` 为您的服务器地址：
 
 ```json
 {
-  "api": {
-    "host": "0.0.0.0",
-    "port": 3001,
-    "jwt_secret_key": "change-this-to-a-random-string-in-production",
-    "jwt_token_expires_days": 30,
-    "debug": false,
-    "cors_origins": ["*"]
-  },
   "app": {
     "api_base_url": "http://您的服务器IP:3001/api"
   }
 }
 ```
 
-#### 前端配置 dailyhub-app/js/config.js
+#### dailyhub-app/js/config.js
 修改 `dailyhub-app/js/config.js`：
 
 ```javascript
@@ -203,6 +164,8 @@ window.DAILYHUB_CONFIG = {
     API_BASE_URL: 'http://您的服务器IP:3001/api'
 };
 ```
+
+> 详细配置说明请参考「配置文件说明」部分。
 
 ### 2. 启动服务
 
