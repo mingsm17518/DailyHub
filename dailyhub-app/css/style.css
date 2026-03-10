@@ -138,7 +138,7 @@ body.habits-view-active .app-container {
 
 /* ========== Todo Panel ========== */
 .todo-panel {
-    width: 320px;
+    width: 380px;
     height: 100%;  /* 填充父容器高度 */
     min-height: 0;  /* 防止 flex 子元素溢出 */
     background: var(--bg-primary);
@@ -297,7 +297,7 @@ body.habits-view-active .app-container {
 .todo-item {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
     padding: 10px 8px;
     background: var(--bg-secondary);
     border-radius: var(--radius-md);
