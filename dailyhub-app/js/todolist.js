@@ -190,14 +190,21 @@ class TodoDB {
                     if (a.done !== b.done) {
                         return a.done ? 1 : -1;
                     }
-                    // 2. 同一完成状态，按 parentId 分组
+                    // 2. 同一完成状态，按优先级排序：高 > 中 > 低 > 无
+                    const priorityOrder = { 'high': 3, 'medium': 2, 'low': 1 };
+                    const priorityA = priorityOrder[a.priority] ?? 0;
+                    const priorityB = priorityOrder[b.priority] ?? 0;
+                    if (priorityA !== priorityB) {
+                        return priorityB - priorityA;
+                    }
+                    // 3. 同一完成状态和优先级，按 parentId 分组
                     if (a.parentId !== b.parentId) {
                         // 根级任务在前
                         if (a.parentId === null) return -1;
                         if (b.parentId === null) return 1;
                         return 0;
                     }
-                    // 3. 同层级按 position 排序
+                    // 4. 同层级按 position 排序
                     const posA = a.position || 0;
                     const posB = b.position || 0;
                     return posA - posB;
@@ -572,7 +579,7 @@ class TodoList {
 
             // 优先级显示
             const priority = todo.priority || null;
-            const priorityLabels = { 'high': '🔴 高', 'medium': '🟠 中', 'low': '🟢 低', 'null': '⚪ 无' };
+            const priorityLabels = { 'high': '🔴', 'medium': '🟠', 'low': '🟢', 'null': '⚪' };
             const priorityClass = priority ? priority : 'none';
             const priorityHtml = `<span class="todo-item-priority ${priorityClass}" data-todo-id="${todo.id}" data-current-priority="${priority || ''}" title="点击修改优先级">${priorityLabels[priority]}</span>`;
 
