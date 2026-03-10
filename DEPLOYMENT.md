@@ -2,7 +2,17 @@
 
 ## 配置文件说明
 
-配置文件位于项目根目录 `config.json`：
+首次部署前，需要复制并修改配置文件：
+
+```bash
+# 复制后端配置
+cp config.json.example config.json
+
+# 复制前端配置
+cp dailyhub-app/js/config.js.example dailyhub-app/js/config.js
+```
+
+然后根据需要修改配置文件中的各项参数。
 
 ```json
 {
@@ -46,7 +56,7 @@
 
 ```
 DailyHub/
-├── config.json              # 后端配置
+├── config.json.example     # 后端配置示例（复制为 config.json）
 ├── DEPLOYMENT.md           # 本文件
 ├── start-api.sh            # 后端启动脚本
 ├── start-web.sh            # 前端启动脚本
@@ -61,7 +71,7 @@ DailyHub/
 └── dailyhub-app/            # 前端应用
     ├── index.html
     ├── js/
-    │   ├── config.js        # 前端配置
+    │   ├── config.js.example # 前端配置示例（复制为 config.js）
     │   ├── storage.js
     │   └── ...
     └── css/

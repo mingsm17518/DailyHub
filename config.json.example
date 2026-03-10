@@ -1,0 +1,21 @@
+{
+  "api": {
+    "host": "0.0.0.0",
+    "port": 3001,
+    "jwt_secret_key": "change-this-to-a-random-string-in-production",
+    "jwt_token_expires_days": 30,
+    "debug": false,
+    "cors_origins": ["*"]
+  },
+
+  "app": {
+    "api_base_url": "http://localhost:3001/api",
+    "db_version": 5,
+    "web_port": 3000
+  },
+
+  "paths": {
+    "api_dir": "/path/to/DailyHub/dailyhub-api",
+    "web_dir": "/path/to/DailyHub/dailyhub-app"
+  }
+}

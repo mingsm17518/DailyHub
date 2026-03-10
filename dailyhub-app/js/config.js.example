@@ -1,0 +1,6 @@
+// DailyHub 前端配置
+// 复制此文件为 config.js 并修改为您的服务器地址
+
+window.DAILYHUB_CONFIG = {
+    API_BASE_URL: 'http://localhost:3001/api'
+};
