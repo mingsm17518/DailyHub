@@ -1,0 +1,46 @@
+邮件通知功能已实现完成。以下是实现的详细内容：
+
+  已完成的修改
+
+  1. storage.js - 邮件设置存储
+
+  - 新增 EmailSettingsManager 类管理邮件设置
+  - 支持保存/加载邮件配置（启用状态、邮箱地址、提醒时间）
+  - 创建全局 emailSettings 实例
+
+  2. reminder.js - 邮件发送逻辑
+
+  - 添加 initEmailConfig() 方法初始化 EmailJS
+  - 添加 sendEventEmailReminder() 发送日程提醒邮件
+  - 添加 sendTodoEmailReminder() 发送待办提醒邮件
+  - 更新 showEventReminder() 和 showTodoReminder() 触发邮件通知
+
+  3. index.html - 邮件设置界面
+
+  - 引入 EmailJS SDK (email.min.js)
+  - 新增"邮件通知"选项卡
+  - 添加 EmailJS 配置表单（Service ID、Template ID、Public Key）
+  - 添加通知设置（启用开关、接收邮箱、提醒时间）
+  - 添加测试邮件按钮和使用说明
+
+  4. style.css - 邮件设置样式
+
+  - 添加邮件设置相关样式
+
+  5. app.js - 邮件设置交互
+
+  - 添加 initEmailSettings() 初始化邮件设置
+  - 添加 saveEmailConfig() 保存 EmailJS 配置
+  - 添加 clearEmailConfig() 清除配置
+  - 添加 sendTestEmail() 发送测试邮件
+  - 更新 switchTab() 处理邮件选项卡
+
+  使用方法
+
+  1. 访问 EmailJS 注册账号
+  2. 添加邮件服务（Gmail/Outlook/自定义 SMTP）
+  3. 创建邮件模板，使用变量：{{to_email}}, {{to_name}}, {{event_title}}, {{event_date}}, {{event_time}},
+  {{reminder_type}}, {{description}}
+  4. 在应用中填写 Service ID、Template ID 和 Public Key
+  5. 设置接收邮箱和提醒时间
+  6. 点击"发送测试邮件"验证配置

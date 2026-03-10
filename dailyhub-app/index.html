@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="简洁的日历日程管理应用">
+    <meta name="theme-color" content="#4285f4">
+    <title>日历日程管理</title>
+    <link rel="stylesheet" href="css/style.css?v=7.2">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 顶部导航（桌面端） -->
+        <header class="top-nav" id="topNav">
+            <button class="nav-item active" data-view="schedule">
+                <span class="nav-icon">📅</span>
+                <span class="nav-label">日程</span>
+            </button>
+            <button class="nav-item" data-view="timer">
+                <span class="nav-icon">⏱️</span>
+                <span class="nav-label">时间</span>
+            </button>
+            <button class="nav-item" data-view="habits">
+                <span class="nav-icon">🎯</span>
+                <span class="nav-label">习惯</span>
+            </button>
+        </header>
+
+        <!-- 日程视图：包含待办、日历 -->
+        <main class="schedule-view active" id="scheduleView">
+
+            <!-- 待办事项列表面板 -->
+            <aside class="todo-panel" id="todoPanel">
+            <div class="todo-header">
+                <h2>待办事项</h2>
+            </div>
+            <div class="todo-input-wrapper">
+                <input type="text" id="todoInput" placeholder="添加待办事项..." maxlength="100" class="todo-text-input">
+                <div class="todo-priority-selector">
+                    <span class="todo-priority-label">优先级：</span>
+                    <div class="todo-priority-options">
+                        <label class="todo-priority-option none">
+                            <input type="radio" name="todoPriority" value="" checked>
+                            <span>⚪ 无</span>
+                        </label>
+                        <label class="todo-priority-option low">
+                            <input type="radio" name="todoPriority" value="low">
+                            <span>🟢 低</span>
+                        </label>
+                        <label class="todo-priority-option medium">
+                            <input type="radio" name="todoPriority" value="medium">
+                            <span>🟠 中</span>
+                        </label>
+                        <label class="todo-priority-option high">
+                            <input type="radio" name="todoPriority" value="high">
+                            <span>🔴 高</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="todo-actions-row">
+                    <div class="todo-date-picker">
+                        <input type="text" id="todoDueDateDisplay" class="todo-due-date-display" placeholder="无截止日期" readonly>
+                        <button type="button" class="todo-date-icon" id="btnTodoDatePicker" title="选择截止日期">📅</button>
+                        <input type="date" id="todoDueDate" class="todo-due-date-input-hidden">
+                    </div>
+                    <button class="todo-add-btn" id="btnAddTodo" title="添加待办事项">添加</button>
+                </div>
+                <div class="todo-reminder-settings" id="todoReminderSettings" style="display:none;">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="todoReminderEnabled" checked>
+                        <span>启用提醒</span>
+                    </label>
+                    <select id="todoReminderTime" class="reminder-time-select">
+                        <option value="0">当天提醒</option>
+                        <option value="1" selected>提前 1 天</option>
+                        <option value="2">提前 2 天</option>
+                        <option value="3">提前 3 天</option>
+                        <option value="7">提前 1 周</option>
+                    </select>
+                </div>
+            </div>
+            <div class="todo-list" id="todoListContainer">
+                <p class="todo-empty">暂无待办事项</p>
+            </div>
+            <div class="todo-footer">
+                <button class="btn-clear-completed" id="btnClearCompleted" style="display: none;">
+                    清除已完成
+                </button>
+            </div>
+        </aside>
+
+            <!-- 习惯打卡面板（仅移动端显示） -->
+            <aside class="habit-panel" id="habitPanel" style="display:none;">
+            <div class="habit-header">
+                <h2>🎯 习惯打卡</h2>
+                <button class="btn-add" id="btnAddHabit" title="新建习惯">+</button>
+            </div>
+
+            <!-- 习惯列表视图 -->
+            <div class="habit-list-view" id="habitListView">
+                <div class="habits-container" id="habitsContainer">
+                    <p class="empty-state">暂无习惯</p>
+                </div>
+            </div>
+
+        </aside>
+
+            <!-- 每日笔记面板（仅移动端显示） -->
+            <aside class="notes-panel" id="notesPanel" style="display:none;">
+                <div class="note-header">
+                    <h2>📝 每日笔记</h2>
+                    <span class="note-date" id="noteDateMobile"></span>
+                    <button class="note-view-toggle" id="noteViewToggleMobile">预览</button>
+                    <button class="btn-import-time" id="btnImportTimeMobile" title="导入时间追踪">📥</button>
+                </div>
+                <div class="note-date-nav">
+                    <button class="btn-note-prev" id="btnNotePrevMobile">&lt;</button>
+                    <input type="date" id="noteDateInputMobile" class="note-date-input">
+                    <button class="btn-note-next" id="btnNoteNextMobile">&gt;</button>
+                    <button class="btn-note-today" id="btnNoteTodayMobile" title="今天">今天</button>
+                </div>
+                <div class="note-editor">
+                    <textarea id="noteEditorMobile" placeholder="记录今天的收获、反思..."></textarea>
+                </div>
+                <div class="note-preview markdown-body" id="notePreviewMobile"></div>
+                <div class="note-actions">
+                    <span class="note-status" id="noteStatusMobile"></span>
+                </div>
+            </aside>
+
+        <!-- 侧边栏：日程列表 -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2 id="sidebarTitle">日程列表</h2>
+                <button class="btn-add" id="btnAdd" title="添加日程">+</button>
+            </div>
+            <div class="events-list" id="eventsList">
+                <p class="empty-state">选择日期查看日程</p>
+            </div>
+        </aside>
+
+            <!-- 主内容区：日历 -->
+            <main class="main-content">
+            <!-- 月份导航 -->
+            <header class="calendar-header">
+                <button class="btn-nav" id="btnPrevMonth" title="上个月">&lt;</button>
+                <h1 class="month-title" id="monthTitle">2025年2月</h1>
+                <button class="btn-nav" id="btnNextMonth" title="下个月">&gt;</button>
+            </header>
+            <div class="header-actions">
+                <button class="btn-today" id="btnToday">今天</button>
+            </div>
+
+            <!-- 星期标题 -->
+            <div class="weekdays">
+                <div class="weekday">日</div>
+                <div class="weekday">一</div>
+                <div class="weekday">二</div>
+                <div class="weekday">三</div>
+                <div class="weekday">四</div>
+                <div class="weekday">五</div>
+                <div class="weekday">六</div>
+            </div>
+
+            <!-- 日历网格 -->
+            <div class="calendar-grid" id="calendarGrid">
+                <!-- 动态生成 -->
+            </div>
+
+            <!-- 移动端日程列表 -->
+            <div class="mobile-events-section" id="mobileEventsSection">
+                <div class="mobile-events-header">
+                    <h3>日程列表</h3>
+                    <button class="btn-add-inline" id="btnAddInlineMobile">添加日程</button>
+                </div>
+                <div class="mobile-events-list" id="mobileEventsList">
+                    <p class="empty-state">选择日期查看日程</p>
+                </div>
+            </div>
+        </main>
+        </main>
+
+        <!-- 时间追踪视图：独立全屏（桌面端） -->
+        <main class="timer-view" id="timerView">
+            <div class="timer-note-container">
+                <!-- 左侧：时间追踪面板 -->
+                <aside class="time-tracker-panel" id="timeTrackerPanel">
+                    <div class="tracker-header">
+                        <h2>⏱️ 时间追踪</h2>
+                    </div>
+                    <div class="tracker-tabs">
+                        <button class="tracker-tab active" data-tab="timer">计时</button>
+                        <button class="tracker-tab" data-tab="history">记录</button>
+                        <button class="tracker-tab" data-tab="stats">统计</button>
+                    </div>
+                    <div class="tracker-content">
+                        <!-- 计时器内容 -->
+                        <div class="tracker-tab-content active" id="timerTab">
+                            <div class="timer-display">
+                                <span class="timer-time" id="timerTime">00:00:00</span>
+                            </div>
+                            <div class="timer-input">
+                                <input type="text" id="timerActivity" placeholder="你在做什么..." maxlength="50">
+                            </div>
+                            <div class="quick-tags" id="quickTags">
+                                <!-- 动态生成快捷标签 -->
+                            </div>
+                            <button class="btn-timer-start" id="btnStartTimer">🟢 开始计时</button>
+                            <button class="btn-timer-stop" id="btnStopTimer">🔴 停止计时</button>
+                            <div class="timer-save-actions" id="timerSaveActions" style="display:none;">
+                                <button class="btn-save-record" id="btnSaveRecord">💾 保存记录</button>
+                                <button class="btn-discard-record" id="btnDiscardRecord">🗑️ 放弃</button>
+                            </div>
+                        </div>
+                        <div class="tracker-tab-content" id="historyTab">
+                            <div class="history-list" id="historyList">
+                                <p class="empty-state">暂无记录</p>
+                            </div>
+                        </div>
+                        <div class="tracker-tab-content" id="statsTab">
+                            <div class="stats-date-selector">
+                                <input type="date" id="statsDateInput" class="stats-date-input">
+                            </div>
+                            <div class="stats-content" id="statsContent">
+                                <div class="stats-summary" id="statsSummary"></div>
+                                <div class="stats-chart" id="statsChart"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </aside>
+
+                <!-- 右侧：Markdown笔记区域 -->
+                <div class="daily-note-panel" id="dailyNotePanel">
+                    <div class="note-header">
+                        <h2>📝 每日笔记</h2>
+                        <span class="note-date" id="noteDate"></span>
+                        <button class="note-view-toggle" id="noteViewToggle">预览</button>
+                        <button class="btn-import-time" id="btnImportTime" title="导入时间追踪">📥 导入时间</button>
+                    </div>
+                    <div class="note-date-nav">
+                        <button class="btn-note-prev" id="btnNotePrev">&lt;</button>
+                        <input type="date" id="noteDateInput" class="note-date-input">
+                        <button class="btn-note-next" id="btnNoteNext">&gt;</button>
+                        <button class="btn-note-today" id="btnNoteToday" title="今天">今天</button>
+                    </div>
+                    <div class="note-editor">
+                        <textarea id="noteEditor" placeholder="记录今天的收获、反思..."></textarea>
+                    </div>
+                    <div class="note-preview markdown-body" id="notePreview"></div>
+                    <div class="note-actions">
+                        <span class="note-status" id="noteStatus"></span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 习惯视图：独立全屏（桌面端） -->
+        <main class="habits-view" id="habitsView">
+            <div class="habits-header">
+                <h2>习惯打卡</h2>
+                <button class="btn-add" id="btnAddHabitDesktop" title="新建习惯">+ 新建习惯</button>
+            </div>
+            <div class="content-wrapper">
+            <div class="habits-container" id="habitsContainerDesktop">
+                <p class="empty-state">暂无习惯</p>
+            </div>
+            </div>
+        </main>
+
+    <!-- 侧边栏遮罩层 -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- 移动端底部Tab导航 -->
+    <nav class="bottom-tabs" id="bottomTabs">
+        <button class="tab-item active" data-tab="calendar">
+            <span class="tab-icon">📅</span>
+            <span class="tab-label">日历</span>
+        </button>
+        <button class="tab-item" data-tab="todos">
+            <span class="tab-icon">✅</span>
+            <span class="tab-label">待办</span>
+        </button>
+        <button class="tab-item" data-tab="timer">
+            <span class="tab-icon">⏱️</span>
+            <span class="tab-label">计时</span>
+        </button>
+        <button class="tab-item" data-tab="notes">
+            <span class="tab-icon">📝</span>
+            <span class="tab-label">笔记</span>
+        </button>
+        <button class="tab-item" data-tab="habits">
+            <span class="tab-icon">🎯</span>
+            <span class="tab-label">习惯</span>
+        </button>
+    </nav>
+
+    <!-- 添加/编辑日程模态框 -->
+    <div class="modal" id="eventModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">添加日程</h2>
+                <button class="btn-close" id="btnCloseModal">&times;</button>
+            </div>
+            <form id="eventForm">
+                <input type="hidden" id="eventId">
+
+                <div class="form-group">
+                    <label for="eventTitle">标题 *</label>
+                    <input type="text" id="eventTitle" required placeholder="请输入日程标题">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="eventDate">日期 *</label>
+                        <input type="date" id="eventDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventStartTime">开始时间</label>
+                        <input type="time" id="eventStartTime">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="eventEndTime">结束时间</label>
+                    <input type="time" id="eventEndTime">
+                </div>
+
+                <div class="form-group">
+                    <label for="eventDescription">备注</label>
+                    <textarea id="eventDescription" rows="3" placeholder="添加备注信息（可选）"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>提醒设置</label>
+                    <div class="reminder-settings">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="eventReminderEnabled">
+                            <span>启用提醒</span>
+                        </label>
+                        <div class="reminder-time-config" id="eventReminderConfig">
+                            <select id="eventReminderTime">
+                                <option value="0">准时</option>
+                                <option value="5">提前 5 分钟</option>
+                                <option value="15" selected>提前 15 分钟</option>
+                                <option value="30">提前 30 分钟</option>
+                                <option value="60">提前 1 小时</option>
+                                <option value="120">提前 2 小时</option>
+                                <option value="1440">提前 1 天</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">保存</button>
+                    <button type="button" class="btn-secondary" id="btnDeleteEvent">删除</button>
+                    <button type="button" class="btn-secondary" id="btnCancel">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 数据管理模态框 -->
+    <div class="modal" id="dataModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>数据管理</h2>
+                <button class="btn-close" id="btnCloseDataModal">&times;</button>
+            </div>
+            <!-- 选项卡导航 -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" data-tab="backup">本地备份</button>
+                <button class="tab-btn" data-tab="invitation">邀请码管理</button>
+                <button class="tab-btn" data-tab="email">邮件通知</button>
+            </div>
+            <div class="tab-content" id="backupTab">
+            <div class="data-actions">
+                <div class="export-wrapper">
+                    <button class="btn-data" id="btnExport">
+                        <span class="icon">📤</span> 导出数据
+                    </button>
+                    <div class="export-dropdown" id="exportDropdown">
+                        <div class="export-option" id="exportAll">
+                            <span class="option-title">完整备份 (JSON)</span>
+                            <span class="option-desc">导出所有日程和待办</span>
+                        </div>
+                        <div class="export-divider"></div>
+                        <div class="export-option" id="exportTimeCSV">
+                            <span class="option-title">时间记录 (CSV)</span>
+                            <span class="option-desc">Excel可用格式</span>
+                        </div>
+                        <div class="export-option" id="exportTimeMDTable">
+                            <span class="option-title">时间记录 (Markdown表格)</span>
+                            <span class="option-desc">便于阅读</span>
+                        </div>
+                        <div class="export-option" id="exportTimeMDList">
+                            <span class="option-title">时间记录 (Markdown列表)</span>
+                            <span class="option-desc">按日期分组</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-data" id="btnImport">
+                    <span class="icon">📥</span> 导入数据
+                </button>
+                <input type="file" id="importFile" accept=".json" style="display: none;">
+            </div>
+
+            <div class="data-section">
+                <h3>账号管理</h3>
+                <p class="data-hint">登录后可使用云同步功能，在多设备间共享数据</p>
+
+                <div class="account-status" id="accountStatus">
+                    <span class="account-status-text" id="accountStatusText">未登录</span>
+                </div>
+
+                <div class="account-actions" id="accountActions">
+                    <button class="btn-small" id="btnOpenAuthModal">登录账号</button>
+                </div>
+            </div>
+
+            <div class="data-section">
+                <h3>本地文件夹备份</h3>
+                <p class="data-hint">选择一个文件夹，每次云同步后自动保存备份 JSON 文件到该文件夹（仅限 localhost 访问）</p>
+
+                <div class="folder-info" id="folderInfo">
+                    <span class="folder-status" id="folderStatus">未选择文件夹</span>
+                    <button class="btn-small" id="btnChangeFolder">选择文件夹</button>
+                    <button class="btn-small btn-danger" id="btnClearFolder" style="display:none;">清除</button>
+                </div>
+
+                <div class="backup-settings" id="backupSettings" style="display:none;">
+                    <div class="backup-info">
+                        上次备份：<span id="lastBackupTime">从未备份</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-section">
+                <h3>云端数据备份</h3>
+                <p class="data-hint">每次同步后自动保存云端数据到浏览器本地，防止服务器数据丢失</p>
+
+                <div class="backup-list" id="backupList">
+                    <p class="backup-empty">暂无备份记录</p>
+                </div>
+                <button class="btn-small" id="btnRefreshBackups">刷新列表</button>
+            </div>
+            </div>
+            <!-- 邀请码管理选项卡 -->
+            <div class="tab-content" id="invitationTab" style="display: none;">
+                <div class="data-section">
+                    <h3>邀请码管理 <span class="admin-badge">仅管理员可见</span></h3>
+                    <p class="data-hint">创建和管理邀请码，邀请码用于新用户注册</p>
+
+                    <!-- 创建邀请码表单 -->
+                    <div class="invitation-create-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="inviteCode">邀请码</label>
+                                <div class="input-with-btn">
+                                    <input type="text" id="inviteCode" placeholder="留空自动生成">
+                                    <button type="button" class="btn-generate" id="btnGenerateCode" title="自动生成">🎲</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="maxUses">最大使用次数</label>
+                                <input type="number" id="maxUses" min="1" value="1">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="expireDate">过期时间（可选）</label>
+                            <input type="date" id="expireDate">
+                        </div>
+                        <button class="btn-primary" id="btnCreateInviteCode">创建邀请码</button>
+                    </div>
+
+                    <!-- 邀请码列表 -->
+                    <div class="invitation-list-container">
+                        <h4>邀请码列表</h4>
+                        <div class="invitation-list" id="invitationList">
+                            <p class="invitation-empty">加载中...</p>
+                        </div>
+                        <button class="btn-small" id="btnRefreshInvitations">刷新列表</button>
+                    </div>
+                </div>
+            </div>
+            <!-- 邮件通知设置选项卡 -->
+            <div class="tab-content" id="emailTab" style="display: none;">
+                <div class="data-section">
+                    <h3>邮件通知设置</h3>
+                    <p class="data-hint">使用 EmailJS 发送日程提醒邮件到您的邮箱。免费额度每月 200 封。</p>
+
+                    <!-- EmailJS 配置 -->
+                    <div class="emailjs-config">
+                        <h4>EmailJS 配置</h4>
+                        <p class="data-hint">请先在 <a href="https://www.emailjs.com/" target="_blank">EmailJS</a> 注册账号并获取以下信息：</p>
+                        
+                        <div class="form-group">
+                            <label for="emailjsServiceId">Service ID</label>
+                            <input type="text" id="emailjsServiceId" placeholder="例如: service_xxx" class="form-input">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="emailjsTemplateId">Template ID</label>
+                            <input type="text" id="emailjsTemplateId" placeholder="例如: template_xxx" class="form-input">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="emailjsPublicKey">Public Key</label>
+                            <input type="text" id="emailjsPublicKey" placeholder="例如: xxxxxx" class="form-input">
+                        </div>
+
+                        <button class="btn-primary" id="btnSaveEmailConfig">保存配置</button>
+                        <button class="btn-secondary" id="btnClearEmailConfig">清除配置</button>
+                    </div>
+
+                    <!-- 邮件通知开关 -->
+                    <div class="email-notification-toggle">
+                        <h4>通知设置</h4>
+                        
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="emailNotifyEnabled">
+                            <span>启用邮件通知</span>
+                        </label>
+
+                        <div class="form-group">
+                            <label for="userEmail">接收邮箱</label>
+                            <input type="email" id="userEmail" placeholder="输入您的邮箱地址" class="form-input">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="emailReminderTime">默认提醒时间</label>
+                            <select id="emailReminderTime" class="form-input">
+                                <option value="0">准时</option>
+                                <option value="5">提前 5 分钟</option>
+                                <option value="15" selected>提前 15 分钟</option>
+                                <option value="30">提前 30 分钟</option>
+                                <option value="60">提前 1 小时</option>
+                                <option value="1440">提前 1 天</option>
+                            </select>
+                        </div>
+
+                        <button class="btn-small" id="btnTestEmail">发送测试邮件</button>
+                    </div>
+
+                    <!-- EmailJS 使用说明 -->
+                    <div class="emailjs-help">
+                        <h4>使用说明</h4>
+                        <ol>
+                            <li>访问 <a href="https://www.emailjs.com/" target="_blank">EmailJS</a> 并注册账号</li>
+                            <li>添加邮件服务（Gmail、Outlook 或自定义 SMTP）</li>
+                            <li>创建邮件模板，使用以下变量：
+                                <ul>
+                                    <li><code>{{to_email}}</code> - 接收邮箱</li>
+                                    <li><code>{{to_name}}</code> - 接收人名称</li>
+                                    <li><code>{{event_title}}</code> - 日程标题</li>
+                                    <li><code>{{event_date}}</code> - 日程日期</li>
+                                    <li><code>{{event_time}}</code> - 日程时间</li>
+                                    <li><code>{{reminder_type}}</code> - 提醒类型</li>
+                                    <li><code>{{description}}</code> - 备注</li>
+                                </ul>
+                            </li>
+                            <li>填写上述 Service ID、Template ID 和 Public Key</li>
+                            <li>点击"发送测试邮件"验证配置</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 备份查看模态框 -->
+    <div class="modal" id="backupViewModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 id="backupViewTitle">备份内容</h2>
+                <button class="btn-close" id="btnCloseBackupView">&times;</button>
+            </div>
+            <div class="backup-view-content" id="backupViewContent">
+                <!-- 动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 登录/注册模态框 -->
+    <div class="modal" id="authModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="authModalTitle">登录</h2>
+                <button class="btn-close" id="btnCloseAuthModal">&times;</button>
+            </div>
+            <form id="authForm">
+                <div class="form-group">
+                    <label for="authUsername">用户名</label>
+                    <input type="text" id="authUsername" required placeholder="请输入用户名" minlength="3">
+                </div>
+                <div class="form-group">
+                    <label for="authPassword">密码</label>
+                    <input type="password" id="authPassword" required placeholder="请输入密码" minlength="6">
+                </div>
+                <div class="form-group" id="invitationCodeGroup" style="display: none;">
+                    <label for="authInvitationCode">邀请码</label>
+                    <input type="text" id="authInvitationCode" placeholder="请输入邀请码">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary" id="btnAuthSubmit">登录</button>
+                    <button type="button" class="btn-secondary" id="btnCancelAuth">取消</button>
+                    <button type="button" class="btn-secondary" id="btnToggleAuthMode">没有账号？注册</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 新建/编辑习惯模态框 -->
+    <div class="modal" id="habitModal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="habitModalTitle">新建习惯</h2>
+                <button class="btn-close" id="btnCloseHabitModal">&times;</button>
+            </div>
+            <form id="habitForm">
+                <input type="hidden" id="habitId">
+                <div class="form-group">
+                    <label for="habitName">习惯名称 *</label>
+                    <input type="text" id="habitName" required placeholder="例如：每日阅读">
+                </div>
+                <div class="form-group">
+                    <label for="habitDescription">描述</label>
+                    <textarea id="habitDescription" rows="2" placeholder="添加描述（可选）"></textarea>
+                </div>
+                <!-- 颜色和图标设置 - 两行布局 -->
+                <div class="form-group">
+                    <div class="habit-appearance-row">
+                        <!-- 第一行：输入区 -->
+                        <div class="habit-inputs-row">
+                            <div class="habit-color-input">
+                                <label for="habitColor">颜色</label>
+                                <input type="color" id="habitColor" value="#4CAF50" class="color-input">
+                            </div>
+                            <div class="habit-icon-input">
+                                <label for="habitIcon">图标</label>
+                                <input type="text" id="habitIcon" value="✓" maxlength="4" placeholder="🌟">
+                            </div>
+                        </div>
+                        <!-- 第二行：预设图标 -->
+                        <div class="habit-presets-row">
+                            <span class="presets-label">快速选择：</span>
+                            <div class="habit-icon-chips">
+                                <button type="button" class="icon-chip active" data-icon="✓">✓</button>
+                                <button type="button" class="icon-chip" data-icon="📚">📚</button>
+                                <button type="button" class="icon-chip" data-icon="💪">💪</button>
+                                <button type="button" class="icon-chip" data-icon="💤">💤</button>
+                                <button type="button" class="icon-chip" data-icon="🍎">🍎</button>
+                                <button type="button" class="icon-chip" data-icon="✍️">✍️</button>
+                                <button type="button" class="icon-chip" data-icon="🧠">🧠</button>
+                                <button type="button" class="icon-chip" data-icon="📖">📖</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">保存</button>
+                    <button type="button" class="btn-secondary" id="btnDeleteHabit" style="display:none;">删除</button>
+                    <button type="button" class="btn-secondary" id="btnCancelHabit">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 数据管理按钮 -->
+    <button class="btn-data-menu" id="btnDataMenu" title="数据管理">⚙️</button>
+
+    <!-- 云同步按钮 -->
+    <button class="btn-sync" id="btnSync" title="云同步">
+        <span class="sync-icon" id="syncIcon">☁️</span>
+        <span class="sync-status" id="syncStatus">未登录</span>
+    </button>
+
+    <!-- 移动端切换按钮 -->
+    <button class="btn-toggle-sidebar" id="btnToggleSidebar">📋</button>
+
+    <script src="js/utils.js?v=6.5"></script>
+    <script src="js/config.js?v=1.0"></script>
+    <script src="js/storage.js?v=6.5"></script>
+    <script src="js/todolist.js?v=6.5"></script>
+    <script src="js/timeTracker.js?v=6.7"></script>
+    <script src="js/dailyNote.js?v=1.5"></script>
+    <script src="js/backup.js?v=6.5"></script>
+    <script src="js/reminder.js?v=6.5"></script>
+    <script src="js/habitTracker.js?v=6.5"></script>
+    <script src="js/calendar.js?v=6.5"></script>
+    <script src="js/app.js?v=6.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <link rel="stylesheet" href="css/style.css?v=7.2">
+</body>
+</html>
