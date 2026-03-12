@@ -868,9 +868,8 @@ async function importData(e) {
         todoList.render();
 
         // 刷新时间追踪器显示
-        await timeTracker.loadHistory();
-        timeTracker.renderHistory();
-        await timeTracker.updateStats();
+        timeTracker.renderHistoryTab();
+        await timeTracker.renderStatsTab();
     } catch (err) {
         console.error('导入失败:', err);
         showToast('导入失败，请检查文件格式', 'error');

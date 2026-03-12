@@ -2031,10 +2031,26 @@ class CalendarDB {
         return new Promise((resolve, reject) => {
             const transaction = this.db.transaction(['time_tags'], 'readwrite');
             const store = transaction.objectStore('time_tags');
-            const request = store.add(tag);
 
-            request.onsuccess = () => resolve(tag.id);
-            request.onerror = () => reject(request.error);
+            // 首先检查是否已存在
+            const checkRequest = store.get(tag.id);
+            checkRequest.onsuccess = () => {
+                const existing = checkRequest.result;
+
+                if (existing) {
+                    // 已存在，更新
+                    const request = store.put(tag);
+                    request.onsuccess = () => resolve(tag.id);
+                    request.onerror = () => reject(request.error);
+                } else {
+                    // 不存在，添加
+                    const request = store.add(tag);
+                    request.onsuccess = () => resolve(tag.id);
+                    request.onerror = () => reject(request.error);
+                }
+            };
+
+            checkRequest.onerror = () => reject(checkRequest.error);
         });
     }
 
