@@ -441,7 +441,7 @@ class CloudSync {
             };
         } catch (err) {
             console.error('获取云端事件失败:', err);
-            return { events: [], deleted_events: [] };
+            return null;
         }
     }
 
@@ -540,7 +540,7 @@ class CloudSync {
             };
         } catch (err) {
             console.error('获取云端待办事项失败:', err);
-            return { todos: [], deleted_todos: [] };
+            return null;
         }
     }
 
@@ -743,7 +743,7 @@ class CloudSync {
             };
         } catch (err) {
             console.error('获取云端时间记录失败:', err);
-            return { entries: [], deleted_entries: [] };
+            return null;
         }
     }
 
@@ -897,7 +897,7 @@ class CloudSync {
             };
         } catch (err) {
             console.warn('获取云端习惯数据失败:', err);
-            return { habits: [], logs: [], deleted_habits: [] };
+            return null;
         }
     }
 
@@ -926,7 +926,7 @@ class CloudSync {
             };
         } catch (err) {
             console.warn('获取云端笔记数据失败:', err);
-            return { notes: [], deleted_notes: [] };
+            return null;
         }
     }
 
@@ -1373,18 +1373,40 @@ class CalendarDB {
         const cloudHabitsData = await this.cloudSync.fetchAllHabits();
         const cloudNotesData = await this.cloudSync.fetchAllNotes();
 
+        // 如果获取失败，标记失败状态，保留本地数据不覆盖
+        const fetchFailed = {
+            events: !cloudEventsData,
+            todos: !cloudTodosData,
+            timeEntries: !cloudTimeEntriesData,
+            habits: !cloudHabitsData,
+            notes: !cloudNotesData
+        };
+
+        // 为失败的数据提供空数据，避免后续代码报错
+        const safeCloudEventsData = cloudEventsData || { events: [], deleted_events: [] };
+        const safeCloudTodosData = cloudTodosData || { todos: [], deleted_todos: [] };
+        const safeCloudTimeEntriesData = cloudTimeEntriesData || { entries: [], deleted_entries: [] };
+        const safeCloudHabitsData = cloudHabitsData || { habits: [], logs: [], deleted_habits: [] };
+        const safeCloudNotesData = cloudNotesData || { notes: [], deleted_notes: [] };
+
+        if (fetchFailed.events) console.warn('[Sync] 获取Events失败，保留本地数据');
+        if (fetchFailed.todos) console.warn('[Sync] 获取Todos失败，保留本地数据');
+        if (fetchFailed.timeEntries) console.warn('[Sync] 获取TimeEntries失败，保留本地数据');
+        if (fetchFailed.habits) console.warn('[Sync] 获取Habits失败，保留本地数据');
+        if (fetchFailed.notes) console.warn('[Sync] 获取Notes失败，保留本地数据');
+
         // 第二步：先处理服务器墓碑，删除本地对应的已删除数据
         // 这样可以防止已删除的数据被上传回云端
-        await this.cloudSync.processServerTombstones('events', cloudEventsData.deleted_events || []);
-        await this.cloudSync.processServerTombstones('todos', cloudTodosData.deleted_todos || []);
-        await this.cloudSync.processServerTombstones('time_entries', cloudTimeEntriesData.deleted_entries || []);
-        await this.cloudSync.processServerTombstones('habits', cloudHabitsData.deleted_habits || []);
-        await this.cloudSync.processServerTombstones('notes', cloudNotesData.deleted_notes || []);
+        await this.cloudSync.processServerTombstones('events', safeCloudEventsData.deleted_events || []);
+        await this.cloudSync.processServerTombstones('todos', safeCloudTodosData.deleted_todos || []);
+        await this.cloudSync.processServerTombstones('time_entries', safeCloudTimeEntriesData.deleted_entries || []);
+        await this.cloudSync.processServerTombstones('habits', safeCloudHabitsData.deleted_habits || []);
+        await this.cloudSync.processServerTombstones('notes', safeCloudNotesData.deleted_notes || []);
 
         // 第三步：墓碑处理完成后，再获取本地数据进行同步
         // 此时本地数据已经是最新状态（已删除的数据已被移除）
         const localEvents = await this.getAllEvents();
-        const cloudEvents = cloudEventsData.events || [];
+        const cloudEvents = safeCloudEventsData.events || [];
 
         const localMap = new Map(localEvents.map(e => [e.id, e]));
         const cloudMap = new Map(cloudEvents.map(e => [e.id, e]));
@@ -1454,7 +1476,7 @@ class CalendarDB {
 
         // 同步待办事项
         const localTodos = await todoList.todoDB.getAllTodos();
-        const cloudTodos = cloudTodosData.todos || [];
+        const cloudTodos = safeCloudTodosData.todos || [];
 
         const localTodoMap = new Map(localTodos.map(t => [t.id, t]));
         const cloudTodoMap = new Map(cloudTodos.map(t => [t.id, t]));
@@ -1521,7 +1543,7 @@ class CalendarDB {
 
         // 同步时间记录
         const localTimeEntries = await this.getAllTimeEntries();
-        const cloudTimeEntries = cloudTimeEntriesData.entries || [];
+        const cloudTimeEntries = safeCloudTimeEntriesData.entries || [];
 
         const localTimeEntryMap = new Map(localTimeEntries.map(e => [e.id, e]));
         const cloudTimeEntryMap = new Map(cloudTimeEntries.map(e => [e.id, e]));
@@ -1572,7 +1594,7 @@ class CalendarDB {
 
         // 同步习惯数据
         const localHabits = await this.getAllHabits();
-        const cloudHabits = cloudHabitsData.habits || [];
+        const cloudHabits = safeCloudHabitsData.habits || [];
 
         const localHabitMap = new Map(localHabits.map(h => [h.id, h]));
         const cloudHabitMap = new Map(cloudHabits.map(h => [h.id, h]));
@@ -1623,7 +1645,7 @@ class CalendarDB {
 
         // 同步习惯打卡记录
         const localHabitLogs = await this.getAllHabitLogs();
-        const cloudHabitLogs = cloudHabitsData.logs || [];
+        const cloudHabitLogs = safeCloudHabitsData.logs || [];
 
         const localLogMap = new Map(localHabitLogs.map(l => [l.id, l]));
         const cloudLogMap = new Map(cloudHabitLogs.map(l => [l.id, l]));
@@ -1651,7 +1673,7 @@ class CalendarDB {
 
         // 同步每日笔记（使用之前获取的 cloudNotesData）
         const localNotes = await this.getAllNotes();
-        const cloudNotes = cloudNotesData.notes || [];
+        const cloudNotes = safeCloudNotesData.notes || [];
 
         const localNoteMap = new Map(localNotes.map(n => [n.id, n]));
         const cloudNoteMap = new Map(cloudNotes.map(n => [n.id, n]));
