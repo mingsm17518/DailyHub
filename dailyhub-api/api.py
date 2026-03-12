@@ -324,7 +324,7 @@ def delete_event(event_id):
     user_id = get_jwt_identity()
 
     if not Event.find_by_id(event_id, user_id):
-        return jsonify({'error': 'Event not found'}), 404
+        return jsonify({'success': True}), 200
 
     Event.delete(event_id, user_id)
 
@@ -526,7 +526,7 @@ def delete_todo(todo_id):
     user_id = get_jwt_identity()
 
     if not Todo.find_by_id(todo_id, user_id):
-        return jsonify({'error': 'Todo not found'}), 404
+        return jsonify({'success': True}), 200
 
     Todo.delete(todo_id, user_id)
 
@@ -703,7 +703,7 @@ def delete_time_entry(entry_id):
     user_id = get_jwt_identity()
 
     if not TimeEntry.find_by_id(entry_id, user_id):
-        return jsonify({'error': 'Time entry not found'}), 404
+        return jsonify({'success': True}), 200
 
     TimeEntry.delete(entry_id, user_id)
 
@@ -881,7 +881,7 @@ def delete_habit(habit_id):
     user_id = get_jwt_identity()
 
     if not Habit.find_by_id(habit_id, user_id):
-        return jsonify({'error': 'Habit not found'}), 404
+        return jsonify({'success': True}), 200
 
     Habit.delete(habit_id, user_id)
     DeletedHabit.create(user_id, habit_id)
@@ -1132,7 +1132,7 @@ def delete_note(date):
 
     note = DailyNote.find_by_date(user_id, date)
     if not note:
-        return jsonify({'error': 'Note not found'}), 404
+        return jsonify({'success': True}), 200
 
     DailyNote.delete(note['id'], user_id)
 

@@ -1008,6 +1008,13 @@ class CloudSync {
             return;
         }
 
+        // 保护逻辑：如果墓碑列表过大，可能是数据异常，跳过处理
+        // 防止刷新页面后所有待办被误删的问题
+        if (type === 'todos' && deletedIds.length > 20) {
+            console.warn(`[CloudSync] Skipping ${type} tombstone processing - too many tombstones (${deletedIds.length}), possible data inconsistency`);
+            return;
+        }
+
         // console.log(`[CloudSync] Processing ${deletedIds.length} server tombstones for ${type}`);
 
         for (const id of deletedIds) {

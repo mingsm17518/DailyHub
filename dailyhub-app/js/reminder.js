@@ -18,8 +18,6 @@ class ReminderManager {
      * 初始化提醒管理器
      */
     async init() {
-        console.log('ReminderManager: 初始化中...');
-
         // 检查浏览器支持
         if (!('Notification' in window)) {
             console.warn('浏览器不支持通知 API');
@@ -32,7 +30,6 @@ class ReminderManager {
             this.useInAppOnly = true;
             this.startChecking();
             this.setupVisibilityListener();
-            console.log('ReminderManager: 初始化完成（应用内模式）');
             return;
         }
 
@@ -62,8 +59,6 @@ class ReminderManager {
         // 启动定期检查
         this.startChecking();
         this.setupVisibilityListener();
-
-        console.log('ReminderManager: 初始化完成');
     }
 
     /**
@@ -71,7 +66,6 @@ class ReminderManager {
      */
     initEmailConfig(config) {
         if (!config || !config.serviceId || !config.templateId || !config.publicKey) {
-            console.warn('ReminderManager: 邮件配置不完整，邮件通知将被禁用');
             this.emailEnabled = false;
             return false;
         }
@@ -79,7 +73,6 @@ class ReminderManager {
 
         // 检查 EmailJS 是否已加载
         if (typeof emailjs === 'undefined') {
-            console.error('ReminderManager: EmailJS SDK 未加载');
             this.emailEnabled = false;
             return false;
         }
@@ -88,10 +81,8 @@ class ReminderManager {
         try {
             emailjs.init(this.emailConfig.publicKey);
             this.emailEnabled = true;
-            console.log('ReminderManager: 邮件配置已初始化');
             return true;
         } catch (error) {
-            console.error('ReminderManager: EmailJS 初始化失败', error);
             this.emailEnabled = false;
             return false;
         }
@@ -111,7 +102,6 @@ class ReminderManager {
         // 监听页面可见性变化，当页面重新可见时立即检查
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden) {
-                console.log('ReminderManager: 页面重新可见，检查提醒');
                 this.checkReminders();
             }
         });
@@ -168,7 +158,6 @@ class ReminderManager {
     async checkReminders() {
         try {
             const now = new Date();
-            console.log('ReminderManager: 开始检查提醒', now.toISOString());
 
             // 检查日程提醒
             await this.checkEventReminders(now);
@@ -189,8 +178,6 @@ class ReminderManager {
      */
     async checkEventReminders(now) {
         try {
-            // console.log('=== checkEventReminders 开始 ===', now.toISOString());
-
             // 获取接下来7天内的日程
             const endDate = new Date(now);
             endDate.setDate(endDate.getDate() + 7);
@@ -199,24 +186,20 @@ class ReminderManager {
 
             // 将 Date 对象转换为字符串格式 (YYYY-MM-DD)，因为 getEventsInRange 期望字符串
             const events = await db.getEventsInRange(formatDate(startDate), formatDate(endDate));
-            // console.log(`找到 ${events.length} 个事件`);
 
             for (const event of events) {
                 // 检查是否启用了提醒
                 if (!event.reminder || !event.reminder.enabled) {
-                    console.log(`跳过事件 "${event.title}": 未启用提醒`);
                     continue;
                 }
 
                 // 检查日程是否已完成
                 if (event.completed) {
-                    console.log(`跳过事件 "${event.title}": 已完成`);
                     continue;
                 }
 
                 const reminderKey = `event_${event.id}`;
                 const minutesBefore = event.reminder.minutesBefore ?? 15;
-                console.log(`检查事件: ${event.title}, minutesBefore=${minutesBefore}`);
 
                 // 计算提醒时间
                 let eventTime;
@@ -233,24 +216,10 @@ class ReminderManager {
                 const reminderTime = new Date(eventTime.getTime() - minutesBefore * 60 * 1000);
                 const timeDiff = now.getTime() - reminderTime.getTime();
 
-                console.log(`  事件时间: ${eventTime.toISOString()}`);
-                console.log(`  提醒时间: ${reminderTime.toISOString()}`);
-                console.log(`  当前时间: ${now.toISOString()}`);
-                console.log(`  时间差: ${timeDiff}ms (${Math.round(timeDiff/1000)}秒)`);
-                console.log(`  已发送: ${this.sentReminders.has(reminderKey)}`);
-                console.log(`  条件检查: timeDiff>=0=${timeDiff>=0}, timeDiff<${this.CHECK_INTERVAL_MS}=${timeDiff<this.CHECK_INTERVAL_MS}`);
-
                 // 如果提醒时间已到（在过去60秒内或正好是现在），且未发送过提醒
                 if (timeDiff >= 0 && timeDiff < this.CHECK_INTERVAL_MS && !this.sentReminders.has(reminderKey)) {
-                    console.log(`*** 触发提醒: ${event.title} ***`);
                     this.showEventReminder(event, minutesBefore);
                     this.sentReminders.set(reminderKey, now.getTime());
-                }
-
-                if (this.sentReminders.has(reminderKey)) {
-                    const sentTime = this.sentReminders.get(reminderKey);
-                    const secondsAgo = Math.round((now.getTime() - sentTime) / 1000);
-                    console.log(`  已在 ${secondsAgo} 秒前发送过提醒`);
                 }
             }
         } catch (error) {
@@ -386,18 +355,12 @@ class ReminderManager {
      * 显示桌面通知
      */
     showNotification(title, body, options = {}) {
-        console.log('showNotification 被调用:', { title, body, options });
-        console.log('useInAppOnly:', this.useInAppOnly);
-        console.log('Notification.permission:', Notification?.permission);
-
         // 如果权限被拒绝或使用应用内模式，使用 Toast 降级
         if (this.useInAppOnly || !('Notification' in window) || Notification.permission !== 'granted') {
-            console.log('降级到应用内通知');
             this.showInAppNotification(title, body, options);
             return;
         }
 
-        console.log('使用浏览器通知');
         const defaultOptions = {
             icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📅</text></svg>',
             badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🔔</text></svg>',
@@ -414,16 +377,8 @@ class ReminderManager {
             notification.onclick = () => {
                 window.focus();
                 notification.close();
-
-                // 可选：跳转到相关内容
-                if (options.data) {
-                    console.log('ReminderManager: 通知被点击', options.data);
-                }
             };
-
-            console.log('ReminderManager: 发送通知', title);
         } catch (error) {
-            console.error('ReminderManager: 显示通知失败，降级到应用内通知', error);
             this.showInAppNotification(title, body, options);
         }
     }
@@ -432,11 +387,8 @@ class ReminderManager {
      * 显示应用内通知（Toast 降级）
      */
     showInAppNotification(title, body, options = {}) {
-        console.log('showInAppNotification 被调用:', { title, body });
         const message = `${title}\n${body}`;
-        console.log('准备调用 showToast:', message);
         showToast(message, 'info');
-        console.log('showToast 调用完成');
     }
 
     /**
@@ -477,10 +429,7 @@ class ReminderManager {
                 this.emailConfig.templateId,
                 templateParams
             );
-
-            console.log('ReminderManager: 邮件通知已发送', event.title);
         } catch (error) {
-            console.error('ReminderManager: 邮件发送失败', error);
             // 不抛出错误，避免影响桌面通知
         }
     }
@@ -530,10 +479,8 @@ class ReminderManager {
                 this.emailConfig.templateId,
                 templateParams
             );
-
-            console.log('ReminderManager: 待办邮件通知已发送', todo.text);
         } catch (error) {
-            console.error('ReminderManager: 待办邮件发送失败', error);
+            // 不抛出错误，避免影响桌面通知
         }
     }
 
@@ -572,14 +519,12 @@ class ReminderManager {
      */
     resetReminders() {
         this.sentReminders.clear();
-        console.log('ReminderManager: 已重置提醒记录');
     }
 
     /**
      * 手动触发提醒检查（用于测试）
      */
     async triggerCheck() {
-        console.log('ReminderManager: 手动触发检查');
         await this.checkReminders();
     }
 }
