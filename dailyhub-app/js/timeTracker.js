@@ -12,6 +12,7 @@ class TimeTracker {
         this.currentActivity = '';
         this.currentTagId = null;
         this.statsSelectedDate = formatDate(new Date());  // 默认显示当天
+        this.historySelectedDate = null;  // null 表示显示所有记录
         this.calendarCurrentDate = new Date();  // 日历当前显示的月份
 
         // 默认快捷标签
@@ -380,6 +381,109 @@ class TimeTracker {
 
         // 统计日期选择器 - 自定义日期选择器
         this.initDatePicker();
+
+        // 绑定统计日期导航按钮
+        const btnStatsPrev = document.getElementById('btnStatsPrev');
+        if (btnStatsPrev) {
+            btnStatsPrev.addEventListener('click', () => this.navigateStatsDate(-1));
+        }
+
+        const btnStatsNext = document.getElementById('btnStatsNext');
+        if (btnStatsNext) {
+            btnStatsNext.addEventListener('click', () => this.navigateStatsDate(1));
+        }
+
+        const btnStatsToday = document.getElementById('btnStatsToday');
+        if (btnStatsToday) {
+            btnStatsToday.addEventListener('click', () => this.goToStatsToday());
+        }
+
+        // 绑定历史记录日期导航按钮
+        const btnHistoryPrev = document.getElementById('btnHistoryPrev');
+        if (btnHistoryPrev) {
+            btnHistoryPrev.addEventListener('click', () => this.navigateHistoryDate(-1));
+        }
+
+        const btnHistoryNext = document.getElementById('btnHistoryNext');
+        if (btnHistoryNext) {
+            btnHistoryNext.addEventListener('click', () => this.navigateHistoryDate(1));
+        }
+
+        const btnHistoryToday = document.getElementById('btnHistoryToday');
+        if (btnHistoryToday) {
+            btnHistoryToday.addEventListener('click', () => this.goToHistoryToday());
+        }
+
+        const btnHistoryAll = document.getElementById('btnHistoryAll');
+        if (btnHistoryAll) {
+            btnHistoryAll.addEventListener('click', () => this.showAllHistory());
+        }
+    }
+
+    /**
+     * 导航统计日期
+     */
+    navigateStatsDate(delta) {
+        const current = new Date(this.statsSelectedDate);
+        current.setDate(current.getDate() + delta);
+        this.statsSelectedDate = formatDate(current);
+        this.updateDateDisplay();
+        this.renderStatsTab();
+    }
+
+    /**
+     * 跳转到今天的统计
+     */
+    goToStatsToday() {
+        this.statsSelectedDate = formatDate(new Date());
+        this.updateDateDisplay();
+        this.renderStatsTab();
+    }
+
+    /**
+     * 导航历史记录日期
+     */
+    navigateHistoryDate(delta) {
+        const today = formatDate(new Date());
+        let current = this.historySelectedDate ? new Date(this.historySelectedDate) : new Date();
+
+        // 如果没有选择日期，默认从今天开始导航
+        if (!this.historySelectedDate) {
+            current = new Date(today);
+        }
+
+        current.setDate(current.getDate() + delta);
+        this.historySelectedDate = formatDate(current);
+        this.updateHistoryDateDisplay();
+        this.renderHistoryTab();
+    }
+
+    /**
+     * 跳转到今天的历史记录
+     */
+    goToHistoryToday() {
+        this.historySelectedDate = formatDate(new Date());
+        this.updateHistoryDateDisplay();
+        this.renderHistoryTab();
+    }
+
+    /**
+     * 显示全部历史记录
+     */
+    showAllHistory() {
+        this.historySelectedDate = null;
+        this.updateHistoryDateDisplay();
+        this.renderHistoryTab();
+    }
+
+    /**
+     * 更新历史记录日期显示
+     */
+    updateHistoryDateDisplay() {
+        const historyDateInput = document.getElementById('historyDateInput');
+        if (historyDateInput) {
+            historyDateInput.value = this.historySelectedDate || '';
+        }
     }
 
     /**
@@ -388,16 +492,29 @@ class TimeTracker {
     initDatePicker() {
         const statsDateInput = document.getElementById('statsDateInput');
 
-        if (!statsDateInput) return;
+        if (statsDateInput) {
+            // 设置初始值为当前选中日期
+            statsDateInput.value = this.statsSelectedDate;
 
-        // 设置初始值为当前选中日期
-        statsDateInput.value = this.statsSelectedDate;
+            // 监听日期变化
+            statsDateInput.addEventListener('change', (e) => {
+                this.statsSelectedDate = e.target.value;
+                this.renderStatsTab();
+            });
+        }
 
-        // 监听日期变化
-        statsDateInput.addEventListener('change', (e) => {
-            this.statsSelectedDate = e.target.value;
-            this.renderStatsTab();
-        });
+        // 历史记录日期选择器
+        const historyDateInput = document.getElementById('historyDateInput');
+        if (historyDateInput) {
+            // 设置初始值为今天（如果没有选择特定日期则为空）
+            historyDateInput.value = this.historySelectedDate || '';
+
+            // 监听日期变化
+            historyDateInput.addEventListener('change', (e) => {
+                this.historySelectedDate = e.target.value || null;
+                this.renderHistoryTab();
+            });
+        }
     }
 
     /**
@@ -509,7 +626,12 @@ class TimeTracker {
         `;
 
         try {
-            const entries = await db.getAllTimeEntries();
+            let entries = await db.getAllTimeEntries();
+
+            // 根据选择的日期过滤记录
+            if (this.historySelectedDate) {
+                entries = entries.filter(e => e.startTime.startsWith(this.historySelectedDate));
+            }
 
             if (entries.length === 0) {
                 historyList.innerHTML = '<p class="empty-state">暂无记录</p>' + addButtonHtml;

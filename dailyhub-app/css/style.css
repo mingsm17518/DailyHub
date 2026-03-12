@@ -988,26 +988,117 @@ body.habits-view-active .app-container {
 }
 
 /* Stats Tab */
-.stats-date-selector {
+.stats-date-nav {
     padding: 12px 16px;
     border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+}
+
+.btn-stats-prev,
+.btn-stats-next {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.btn-stats-prev:hover,
+.btn-stats-next:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-color-hover);
+}
+
+.btn-stats-today {
+    padding: 8px 14px;
+    border: 1px solid var(--primary-color);
+    border-radius: 6px;
+    background-color: var(--primary-color);
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.btn-stats-today:hover {
+    background-color: #3367d6;
+}
+
+/* History Tab Date Navigation */
+.history-date-nav {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-history-prev,
+.btn-history-next {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.btn-history-prev:hover,
+.btn-history-next:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-color-hover);
+}
+
+.btn-history-today {
+    padding: 8px 14px;
+    border: 1px solid var(--primary-color);
+    border-radius: 6px;
+    background-color: var(--primary-color);
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.btn-history-today:hover {
+    background-color: #3367d6;
+}
+
+.btn-history-all {
+    padding: 8px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.btn-history-all:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-color-hover);
 }
 
 /* 日期输入框（内置日期选择器） */
 .stats-date-input {
     flex: 1;
-    padding: 10px 14px;
+    padding: 8px 12px;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: 6px;
     font-size: 14px;
     background-color: var(--bg-primary);
     color: var(--text-primary);
     cursor: pointer;
     transition: all 0.2s ease;
-    width: 100%;
+    min-width: 0;
 }
 
 .stats-date-input:hover {
@@ -1016,6 +1107,30 @@ body.habits-view-active .app-container {
 }
 
 .stats-date-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+}
+
+.history-date-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 0;
+}
+
+.history-date-input:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-color-hover);
+}
+
+.history-date-input:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);

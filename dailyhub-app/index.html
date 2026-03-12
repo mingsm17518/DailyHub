@@ -6,7 +6,7 @@
     <meta name="description" content="简洁的日历日程管理应用">
     <meta name="theme-color" content="#4285f4">
     <title>日历日程管理</title>
-    <link rel="stylesheet" href="css/style.css?v=7.2">
+    <link rel="stylesheet" href="css/style.css?v=7.3">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
 </head>
@@ -215,13 +215,23 @@
                             </div>
                         </div>
                         <div class="tracker-tab-content" id="historyTab">
+                            <div class="history-date-nav">
+                                <button class="btn-history-prev" id="btnHistoryPrev">&lt;</button>
+                                <input type="date" id="historyDateInput" class="history-date-input">
+                                <button class="btn-history-next" id="btnHistoryNext">&gt;</button>
+                                <button class="btn-history-today" id="btnHistoryToday" title="今天">今天</button>
+                                <button class="btn-history-all" id="btnHistoryAll" title="显示全部">全部</button>
+                            </div>
                             <div class="history-list" id="historyList">
                                 <p class="empty-state">暂无记录</p>
                             </div>
                         </div>
                         <div class="tracker-tab-content" id="statsTab">
-                            <div class="stats-date-selector">
+                            <div class="stats-date-nav">
+                                <button class="btn-stats-prev" id="btnStatsPrev">&lt;</button>
                                 <input type="date" id="statsDateInput" class="stats-date-input">
+                                <button class="btn-stats-next" id="btnStatsNext">&gt;</button>
+                                <button class="btn-stats-today" id="btnStatsToday" title="今天">今天</button>
                             </div>
                             <div class="stats-content" id="statsContent">
                                 <div class="stats-summary" id="statsSummary"></div>
@@ -685,7 +695,7 @@
     <script src="js/config.js?v=1.0"></script>
     <script src="js/storage.js?v=6.5"></script>
     <script src="js/todolist.js?v=6.5"></script>
-    <script src="js/timeTracker.js?v=6.7"></script>
+    <script src="js/timeTracker.js?v=6.8"></script>
     <script src="js/dailyNote.js?v=1.5"></script>
     <script src="js/backup.js?v=6.5"></script>
     <script src="js/reminder.js?v=6.6"></script>
@@ -693,6 +703,6 @@
     <script src="js/calendar.js?v=6.5"></script>
     <script src="js/app.js?v=6.8"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <link rel="stylesheet" href="css/style.css?v=7.2">
+    <link rel="stylesheet" href="css/style.css?v=7.3">
 </body>
 </html>
