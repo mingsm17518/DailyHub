@@ -1008,7 +1008,7 @@ class CloudSync {
             return;
         }
 
-        console.log(`[CloudSync] Processing ${deletedIds.length} server tombstones for ${type}`);
+        // console.log(`[CloudSync] Processing ${deletedIds.length} server tombstones for ${type}`);
 
         for (const id of deletedIds) {
             if (type === 'events') {

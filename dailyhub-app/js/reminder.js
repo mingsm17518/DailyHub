@@ -189,7 +189,7 @@ class ReminderManager {
      */
     async checkEventReminders(now) {
         try {
-            console.log('=== checkEventReminders 开始 ===', now.toISOString());
+            // console.log('=== checkEventReminders 开始 ===', now.toISOString());
 
             // 获取接下来7天内的日程
             const endDate = new Date(now);
@@ -199,7 +199,7 @@ class ReminderManager {
 
             // 将 Date 对象转换为字符串格式 (YYYY-MM-DD)，因为 getEventsInRange 期望字符串
             const events = await db.getEventsInRange(formatDate(startDate), formatDate(endDate));
-            console.log(`找到 ${events.length} 个事件`);
+            // console.log(`找到 ${events.length} 个事件`);
 
             for (const event of events) {
                 // 检查是否启用了提醒
